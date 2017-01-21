@@ -2,6 +2,10 @@
 
 Windows screen saver displaying a "Rule 30" cellular automaton.
 
+![Screnshot 1](https://raw.githubusercontent.com/ditrytus/CellularAutomataScreensaver/master/Screenshots/screen1.png)
+
+![Screnshot 2](https://raw.githubusercontent.com/ditrytus/CellularAutomataScreensaver/master/Screenshots/screen2.png)
+
 More on cellular automata you can find on [mathworld website](http://mathworld.wolfram.com/ElementaryCellularAutomaton.html).
 
 It was my "one boring evening" project I did in somewhere in 2012 after reading a few chapters from "The New Kind of Science" by Stephen Wolfram. You can read an ebook on [official website](http://www.wolframscience.com/).
