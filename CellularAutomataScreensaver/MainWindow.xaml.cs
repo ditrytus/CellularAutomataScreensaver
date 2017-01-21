@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -61,21 +62,20 @@ namespace CellularAutomataScreensaver
         {
             Dispatcher.BeginInvoke((Action)(() =>
             {
-                ProgressGeneration();
                 AddNewCellsRow();
             }));
         }
 
         private void ProgressGeneration()
         {
-            this.currencGeneration = automaton.Transform(this.currencGeneration);
+            currencGeneration = automaton.Transform(currencGeneration);
         }
 
         private void Canvas_Loaded_1(object sender, RoutedEventArgs e)
         {
-            this.UpdateLayout();
+            UpdateLayout();
 
-            this.currencGeneration = GenerateRandomGeneration();
+            currencGeneration = GenerateRandomGeneration();
 
             AddNewCellsRow();
         }
@@ -83,10 +83,10 @@ namespace CellularAutomataScreensaver
         private void AddNewCellsRow()
         {
             var cellsRow = CreateCellsRow();
-            Storyboard ascentBoard = CreateAscendingAnimation(cellsRow);
-            this.LayoutCanvas.Children.Add(cellsRow);
-            var timerInterval = TimeSpan.FromSeconds((((1 * subrows) - 0.25) / rowsPerSecond));
+            CreateAscendingAnimation(cellsRow);
+            LayoutCanvas.Children.Add(cellsRow);
             currentCellRows = cellsRow;
+            var timerInterval = TimeSpan.FromSeconds((subrows - 0.25) / rowsPerSecond);
             if (timer != null)
             {
                 timer.Dispose();
@@ -98,7 +98,7 @@ namespace CellularAutomataScreensaver
         {
             Path cellsRow = new Path()
             {
-                Fill = this.ForegroundColor
+                Fill = ForegroundColor
             };
             StreamGeometry rowsGeometry = new StreamGeometry();
             using (var geometryContext = rowsGeometry.Open())
@@ -106,9 +106,9 @@ namespace CellularAutomataScreensaver
                 for (int j = 0; j < subrows; j++)
                 {
                     ProgressGeneration();
-                    for (int i = 0; i < this.currencGeneration.Length; i++)
+                    for (int i = 0; i < currencGeneration.Length; i++)
                     {
-                        var cell = this.currencGeneration[i];
+                        var cell = currencGeneration[i];
                         if (cell)
                         {
                             var rectStartPoint = new Point(i * cellSize, j * cellSize);
@@ -137,27 +137,28 @@ namespace CellularAutomataScreensaver
                 topLength = Canvas.GetTop(currentCellRows) + currentCellRows.ActualHeight - 3;
             }
             Canvas.SetTop(cellsRow, topLength);
+            Debug.WriteLine($"LayoutCanvas.ActualHeight = {LayoutCanvas.ActualHeight}; topLength = {topLength}");
             return cellsRow;
         }
 
-        private Storyboard CreateAscendingAnimation(UIElement cellsRow)
+        private void CreateAscendingAnimation(UIElement cellsRow)
         {
-            DoubleAnimation ascentAnimation = new DoubleAnimation(Canvas.GetTop(cellsRow) - (this.MaxRows + subrows) * cellSize, new Duration(TimeSpan.FromSeconds((this.MaxRows + subrows) / rowsPerSecond)));
+            DoubleAnimation ascentAnimation = new DoubleAnimation(
+                Canvas.GetTop(cellsRow) - (MaxRows + subrows) * cellSize,
+                new Duration(TimeSpan.FromSeconds((MaxRows + subrows) / rowsPerSecond)));
             Storyboard.SetTarget(ascentAnimation, cellsRow);
             Storyboard.SetTargetProperty(ascentAnimation, new PropertyPath("(Canvas.Top)"));
 
-            Storyboard ascentBoard = new Storyboard();
+            var ascentBoard = new Storyboard();
             ascentBoard.Children.Add(ascentAnimation);
             ascentBoard.Completed += ascentBoard_Completed;
             ascentBoard.Begin();
-
-            return ascentBoard;
         }
 
         private bool[] GenerateRandomGeneration()
         {
             var rand = new Random();
-            var randomGeneration = Enumerable.Range(0, this.CellsInRow).Select(x => rand.Next() % 2 == 0 ? true : false).ToArray();
+            var randomGeneration = Enumerable.Range(0, CellsInRow).Select(x => rand.Next() % 2 == 0 ? true : false).ToArray();
             return randomGeneration;
         }
 
@@ -165,7 +166,7 @@ namespace CellularAutomataScreensaver
         {
             get
             {
-                return (int)Math.Ceiling(this.LayoutCanvas.ActualHeight / cellSize);
+                return (int)Math.Ceiling(LayoutCanvas.ActualHeight / cellSize);
             }
         }
 
@@ -173,13 +174,13 @@ namespace CellularAutomataScreensaver
         {
             get
             {
-                return (int)Math.Ceiling(this.LayoutCanvas.ActualWidth / cellSize);
+                return (int)Math.Ceiling(LayoutCanvas.ActualWidth / cellSize);
             }
         }
 
         void ascentBoard_Completed(object sender, EventArgs e)
         {
-            this.LayoutCanvas.Children.Remove((UIElement)Storyboard.GetTarget(((sender as ClockGroup).Timeline as Storyboard).Children[0]));
+            LayoutCanvas.Children.Remove((UIElement)Storyboard.GetTarget(((sender as ClockGroup).Timeline as Storyboard).Children[0]));
         }
 
         private bool IsInScreensaver => mode == WindowMode.Screensaver;
