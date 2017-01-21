@@ -35,16 +35,23 @@ namespace CellularAutomataScreensaver
 
         Timer timer;
 
-        bool isInPreviewMode;
+        WindowMode mode;
 
-        public MainWindow(bool isInPreviewMode = false)
+        public MainWindow(WindowMode mode)
         {
             InitializeComponent();
-            this.isInPreviewMode = isInPreviewMode;
+            this.mode = mode;
             automaton = new CellularAutomaton(30, true);
-            if (this.isInPreviewMode)
+            switch(mode)
             {
-                this.Cursor = Cursors.Arrow;
+                case WindowMode.Preview:
+                    Cursor = Cursors.Arrow;
+                    break;
+                case WindowMode.Window:
+                    Cursor = Cursors.Arrow;
+                    ResizeMode = ResizeMode.CanResize;
+                    WindowStyle = WindowStyle.SingleBorderWindow;
+                    break;
             }
         }
 
@@ -168,28 +175,29 @@ namespace CellularAutomataScreensaver
             this.LayoutCanvas.Children.Remove((UIElement)Storyboard.GetTarget(((sender as ClockGroup).Timeline as Storyboard).Children[0]));
         }
 
-        private void Window_MouseWheel(object sender, MouseWheelEventArgs e)
+        private bool IsInScreensaver => mode == WindowMode.Screensaver;
+
+        private void ShutdownIfInPreview()
         {
-            if (!this.isInPreviewMode)
+            if (IsInScreensaver)
             {
                 Application.Current.Shutdown();
             }
+        }
+
+        private void Window_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            ShutdownIfInPreview();
         }
 
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (!this.isInPreviewMode)
-            {
-                Application.Current.Shutdown();
-            }
+            ShutdownIfInPreview();
         }
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
-            if (!this.isInPreviewMode)
-            {
-                Application.Current.Shutdown();
-            }
+            ShutdownIfInPreview();
         }
     }
 }
