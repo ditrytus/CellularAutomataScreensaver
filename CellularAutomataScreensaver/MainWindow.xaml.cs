@@ -37,6 +37,8 @@ namespace CellularAutomataScreensaver
 
         WindowMode mode;
 
+        Path currentCellRows;
+
         public MainWindow(WindowMode mode)
         {
             InitializeComponent();
@@ -84,6 +86,7 @@ namespace CellularAutomataScreensaver
             Storyboard ascentBoard = CreateAscendingAnimation(cellsRow);
             this.LayoutCanvas.Children.Add(cellsRow);
             var timerInterval = TimeSpan.FromSeconds((((1 * subrows) - 0.25) / rowsPerSecond));
+            currentCellRows = cellsRow;
             if (timer != null)
             {
                 timer.Dispose();
@@ -128,8 +131,12 @@ namespace CellularAutomataScreensaver
             cellsRow.Data = rowsGeometry;
 
             Canvas.SetLeft(cellsRow, 0);
-            Canvas.SetTop(cellsRow, this.LayoutCanvas.ActualHeight - cellSize);
-
+            double topLength = LayoutCanvas.ActualHeight - cellSize;
+            if (currentCellRows != null)
+            {
+                topLength = Canvas.GetTop(currentCellRows) + currentCellRows.ActualHeight - 3;
+            }
+            Canvas.SetTop(cellsRow, topLength);
             return cellsRow;
         }
 
